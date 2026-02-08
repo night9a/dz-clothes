@@ -1,0 +1,17 @@
+.settings-block {
+  max-width: 500px;
+  padding: 1.5rem;
+  background: var(--surface);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+}
+.settings-block h2 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+.form-hint {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}

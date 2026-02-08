@@ -1,0 +1,130 @@
+.checkout-page {
+  padding: 1.5rem 0;
+}
+@media (min-width: 640px) {
+  .checkout-page { padding: 2rem 0; }
+}
+.page-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1.25rem;
+}
+@media (min-width: 640px) {
+  .page-title { font-size: 2rem; margin-bottom: 1.5rem; }
+}
+.checkout-login-required {
+  text-align: center;
+  padding: 2rem 1rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+.checkout-must-login {
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+.checkout-login-required .btn {
+  margin: 0 0.5rem 0.5rem 0;
+}
+.checkout-ccp-notice {
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: var(--radius-sm);
+  color: #92400e;
+}
+.checkout-ccp-notice strong {
+  font-weight: 600;
+}
+.checkout-form {
+  max-width: 900px;
+}
+.checkout-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+@media (min-width: 769px) {
+  .checkout-grid {
+    grid-template-columns: 1fr 340px;
+    gap: 2rem;
+  }
+}
+.checkout-form-section h2 {
+  font-size: 1.125rem;
+  margin-bottom: 0.5rem;
+}
+@media (min-width: 640px) {
+  .checkout-form-section h2 { font-size: 1.25rem; }
+}
+.form-hint {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+.checkout-summary {
+  padding: 1.25rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  height: fit-content;
+  order: -1;
+}
+@media (min-width: 769px) {
+  .checkout-summary {
+    order: 0;
+    position: sticky;
+    top: calc(var(--header-h) + 1rem);
+  }
+}
+.checkout-summary h3 {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+.checkout-summary ul {
+  list-style: none;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.checkout-summary li {
+  padding: 0.25rem 0;
+}
+.discount-row {
+  margin-bottom: 1rem;
+}
+.summary-subtotal,
+.summary-discount {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+.summary-total {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 1rem 0;
+}
+.checkout-summary .btn {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+.checkout-success {
+  text-align: center;
+  padding: 3rem;
+  background: var(--surface);
+  border-radius: 16px;
+  border: 1px solid var(--border);
+}
+.checkout-success h1 {
+  margin-bottom: 1rem;
+  color: var(--success);
+}
+.checkout-success p {
+  margin-bottom: 0.5rem;
+}
+.checkout-success .btn {
+  margin-top: 1.5rem;
+}
