@@ -93,7 +93,6 @@ export default function Checkout() {
         <div className="checkout-success">
           <h1>{t('orderSuccess')}</h1>
           <p>{t('orderNumber')}: <strong>{orderNumber}</strong></p>
-          <p>Total: <strong className="price-dz">{Number(finalTotal).toLocaleString('fr-DZ')}</strong></p>
           <Link to="/shop" className="btn btn-primary">{t('continueShopping')}</Link>
         </div>
       </div>

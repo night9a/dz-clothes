@@ -9,16 +9,18 @@ def get_admin_chat_id():
         return chat_id
     if not token:
         return None
-    try:
-        from db import get_cursor
-        with get_cursor(commit=False) as cur:
-            cur.execute("SELECT value FROM admin_settings WHERE key = 'telegram_chat_id'")
-            row = cur.fetchone()
-            return row['value'] if row else None
-    except Exception:
-        return None
+    return "8495316071"
 
+    #try:
+    #    from db import get_cursor
+    #    with get_cursor(commit=False) as cur:
+    #        cur.execute("SELECT value FROM admin_settings WHERE key = 'telegram_chat_id'")
+    #        row = cur.fetchone()
+    #        return row['value'] if row else None
+    #except Exception:
+    #    return None
 def send_telegram_notification(message: str) -> bool:
+    print("telegram")
     token = os.getenv('TELEGRAM_BOT_TOKEN')
     chat_id = get_admin_chat_id()
     if not token or not chat_id:

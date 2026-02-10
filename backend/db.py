@@ -2,6 +2,9 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from contextlib import contextmanager
 import os
+from flask_bcrypt import Bcrypt
+from datetime import datetime
+import uuid
 
 def get_connection():
     return psycopg2.connect(
@@ -21,9 +24,12 @@ def get_cursor(commit=False):
         cur.close()
         conn.close()
 
+# -------------------------
+# Database Initialization
+# -------------------------
 def init_db():
     with get_cursor(commit=True) as cur:
-        # Users
+        # Users table
         cur.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id SERIAL PRIMARY KEY,
@@ -36,18 +42,8 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        for col, typ in [
-            ('full_name', 'VARCHAR(255)'),
-            ('is_verified', 'BOOLEAN DEFAULT FALSE'),
-            ('verification_token', 'VARCHAR(255)'),
-            ('is_admin', 'BOOLEAN DEFAULT FALSE'),
-            ('created_at', 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP'),
-        ]:
-            try:
-                cur.execute(f"ALTER TABLE users ADD COLUMN IF NOT EXISTS {col} {typ}")
-            except Exception:
-                pass
-        # Products
+
+        # Products table
         cur.execute("""
             CREATE TABLE IF NOT EXISTS products (
                 id SERIAL PRIMARY KEY,
@@ -65,15 +61,8 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        for col, typ in [
-            ('options_sizes', 'VARCHAR(500)'),
-            ('options_colors', 'VARCHAR(500)'),
-        ]:
-            try:
-                cur.execute(f"ALTER TABLE products ADD COLUMN IF NOT EXISTS {col} {typ}")
-            except Exception:
-                pass
-        # Cart (session or user-based)
+
+        # Cart items
         cur.execute("""
             CREATE TABLE IF NOT EXISTS cart_items (
                 id SERIAL PRIMARY KEY,
@@ -86,11 +75,7 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        for col in ['option_size', 'option_color']:
-            try:
-                cur.execute(f"ALTER TABLE cart_items ADD COLUMN IF NOT EXISTS {col} VARCHAR(50)")
-            except Exception:
-                pass
+
         # Discounts
         cur.execute("""
             CREATE TABLE IF NOT EXISTS discounts (
@@ -107,6 +92,7 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+
         # Orders
         cur.execute("""
             CREATE TABLE IF NOT EXISTS orders (
@@ -125,6 +111,7 @@ def init_db():
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
+
         # Order items
         cur.execute("""
             CREATE TABLE IF NOT EXISTS order_items (
@@ -134,10 +121,27 @@ def init_db():
                 product_name_fr VARCHAR(255),
                 product_name_ar VARCHAR(255),
                 price DECIMAL(10,2) NOT NULL,
-                quantity INTEGER NOT NULL
+                quantity INTEGER NOT NULL,
+                option_size VARCHAR(50),
+                option_color VARCHAR(50)
             )
         """)
-        # Admin settings (e.g. Telegram chat for notifications)
+
+        # Ensure columns exist even if table existed
+        for col, col_type in [('option_size','VARCHAR(50)'), ('option_color','VARCHAR(50)')]:
+            cur.execute(f"""
+                DO $$
+                BEGIN
+                    IF NOT EXISTS (
+                        SELECT 1 FROM information_schema.columns
+                        WHERE table_name='order_items' AND column_name='{col}'
+                    ) THEN
+                        ALTER TABLE order_items ADD COLUMN {col} {col_type};
+                    END IF;
+                END$$;
+            """)
+
+        # Admin settings
         cur.execute("""
             CREATE TABLE IF NOT EXISTS admin_settings (
                 id SERIAL PRIMARY KEY,
@@ -146,18 +150,18 @@ def init_db():
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         """)
-        # Drop old cart unique constraints (we allow same product with different options)
-    try:
-        with get_cursor(commit=True) as c2:
-            c2.execute("DROP INDEX IF EXISTS cart_user_product;")
-            c2.execute("DROP INDEX IF EXISTS cart_session_product;")
-    except Exception:
-        pass
 
+        # Drop old cart indexes if exist
+        try:
+            cur.execute("DROP INDEX IF EXISTS cart_user_product;")
+            cur.execute("DROP INDEX IF EXISTS cart_session_product;")
+        except Exception:
+            pass
 
+# -------------------------
+# Seed admin
+# -------------------------
 def seed_admin():
-    """Ensure admin user exists: admin@admin.com / 123"""
-    from flask_bcrypt import Bcrypt
     bcrypt = Bcrypt()
     pw_hash = bcrypt.generate_password_hash('123').decode('utf-8')
     with get_cursor(commit=True) as cur:
@@ -174,6 +178,53 @@ def seed_admin():
                 (pw_hash,),
             )
 
+# -------------------------
+# Checkout function
+# -------------------------
+def checkout(user_id, shipping_address=None, email=None, full_name=None):
+    with get_cursor(commit=True) as cur:
+        # Get cart items
+        cur.execute("SELECT * FROM cart_items WHERE user_id = %s", (user_id,))
+        cart_items = cur.fetchall()
+        if not cart_items:
+            return {"error": "Cart is empty."}
+
+        # Calculate total
+        total = sum([float(item['price']) * item['quantity'] for item in cart_items])
+
+        # Create order
+        order_number = str(uuid.uuid4())
+        cur.execute(
+            """INSERT INTO orders (user_id, order_number, total, shipping_address, email, full_name)
+               VALUES (%s, %s, %s, %s, %s, %s) RETURNING id""",
+            (user_id, order_number, total, shipping_address, email, full_name)
+        )
+        order_id = cur.fetchone()['id']
+
+        # Insert order items
+        for item in cart_items:
+            cur.execute("SELECT name_fr, name_ar, price FROM products WHERE id = %s", (item['product_id'],))
+            prod = cur.fetchone()
+            cur.execute(
+                """INSERT INTO order_items
+                   (order_id, product_id, product_name_fr, product_name_ar, price, quantity, option_size, option_color)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+                (
+                    order_id,
+                    item['product_id'],
+                    prod['name_fr'],
+                    prod['name_ar'],
+                    float(prod['price']),
+                    item['quantity'],
+                    item.get('option_size'),
+                    item.get('option_color')
+                )
+            )
+
+        # Clear cart
+        cur.execute("DELETE FROM cart_items WHERE user_id = %s", (user_id,))
+
+        return {"success": True, "order_id": order_id, "order_number": order_number, "total": total}
 
 def seed_products():
     """Insert sample products with images and DZ prices if none exist."""
