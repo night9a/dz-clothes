@@ -71,6 +71,9 @@
   border-bottom: 1px solid var(--border);
   padding: 1rem;
   gap: 0.25rem;
+  opacity: 0;
+  transform: translateY(-8px);
+  transition: opacity var(--transition), transform var(--transition);
 }
 .nav a,
 .nav .nav-btn {
@@ -102,6 +105,8 @@
 }
 .nav-open {
   display: flex;
+  opacity: 1;
+  transform: translateY(0);
 }
 @media (min-width: 769px) {
   .nav {

@@ -1,8 +1,10 @@
-"""Send verification emails via SMTP (free, no API key). No SMTP config = log link to console."""
+"""Send verification emails via Mailjet API.
+
+If Mailjet is not configured, we log the verification link to the console so
+you can still verify accounts during development.
+"""
 import os
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import requests
 
 def send_verification_email(to_email: str, verification_link: str, lang: str = 'fr') -> bool:
     subject = "Vérifiez votre email - DZ Clothes" if lang == 'fr' else "تحقق من بريدك الإلكتروني - DZ Clothes"
@@ -26,36 +28,41 @@ def send_verification_email(to_email: str, verification_link: str, lang: str = '
     """
     html = html_fr if lang == 'fr' else html_ar
 
-    server = os.getenv('MAIL_SERVER')
-    port = int(os.getenv('MAIL_PORT', '587'))
-    username = os.getenv('MAIL_USERNAME')
-    password = os.getenv('MAIL_PASSWORD')
-    use_tls = os.getenv('MAIL_USE_TLS', 'true').lower() == 'true'
-    from_addr = os.getenv('MAIL_FROM', username or 'noreply@dzclothes.dz')
+    api_key = os.getenv('MAILJET_API_KEY')
+    secret_key = os.getenv('MAILJET_SECRET_KEY')
+    from_email = os.getenv('MAIL_FROM', 'noreply@dzclothes.dz')
 
-    if server and username and password:
+    if api_key and secret_key:
         try:
-            msg = MIMEMultipart('alternative')
-            msg['Subject'] = subject
-            msg['From'] = from_addr
-            msg['To'] = to_email
-            msg.attach(MIMEText(html, 'html', 'utf-8'))
-            with smtplib.SMTP(server, port) as s:
-                if use_tls:
-                    s.starttls()
-                s.login(username, password)
-                s.sendmail(from_addr, [to_email], msg.as_string())
-            return True
+            payload = {
+                "Messages": [
+                    {
+                        "From": {"Email": from_email, "Name": "DZ Clothes"},
+                        "To": [{"Email": to_email}],
+                        "Subject": subject,
+                        "HTMLPart": html,
+                    }
+                ]
+            }
+            r = requests.post(
+                "https://api.mailjet.com/v3.1/send",
+                auth=(api_key, secret_key),
+                json=payload,
+                timeout=10,
+            )
+            if r.status_code in (200, 201):
+                return True
+            print(f"[DZ Clothes] Mailjet error: {r.status_code} {r.text}")
+            return False
         except Exception as e:
-            print(f"[DZ Clothes] Email send failed: {e}")
+            print(f"[DZ Clothes] Mailjet send failed: {e}")
             return False
 
-    # No SMTP configured: log link so you can verify without any API key (dev-friendly)
+    # No Mailjet configured: log link for manual verification (dev-friendly)
     print("\n" + "=" * 60)
-    print("[DZ Clothes] Email verification (no SMTP configured)")
+    print("[DZ Clothes] Email verification (Mailjet non configuré)")
     print(f"  To: {to_email}")
     print(f"  Link: {verification_link}")
-    print("  Copy the link above into your browser to verify.")
-    print("  To send real emails, set MAIL_SERVER, MAIL_USERNAME, MAIL_PASSWORD in .env (e.g. Mailtrap free).")
+    print("  Configurez MAILJET_API_KEY et MAILJET_SECRET_KEY dans .env pour envoyer de vrais emails.")
     print("=" * 60 + "\n")
     return True

@@ -18,7 +18,10 @@ const GOOGLE_CLIENT_ID = '814124596804-o07r8uokfces627sar5l0gk1ihacp1u5.apps.goo
 
 function AdminRoute({ children }) {
   const { user } = useAuth()
-  if (!user?.is_admin) return <Navigate to="/" replace />
+  // If not logged in, send to login with redirect back to /admin
+  if (!user) return <Navigate to="/login?redirect=/admin" replace />
+  // Logged in but not admin: send home
+  if (!user.is_admin) return <Navigate to="/" replace />
   return children
 }
 
