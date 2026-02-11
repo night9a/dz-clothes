@@ -20,7 +20,7 @@ from telegram_service import notify_new_order, send_telegram_notification
 app = Flask(__name__)
 app.config.from_object('config.Config')
 app.secret_key = os.getenv('JWT_SECRET_KEY', 'dev-secret-dz-clothes')
-CORS(app, origins=os.getenv('FRONTEND_URL', 'http://localhost:5000').split(','), supports_credentials=True)
+CORS(app, origins=os.getenv('FRONTEND_URL', 'https://dzclothes.netlify.app').split(','), supports_credentials=True)
 JWTManager(app)
 Bcrypt(app)
 
