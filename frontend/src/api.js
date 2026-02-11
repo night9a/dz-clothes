@@ -1,4 +1,4 @@
-const API = 'https://dz-clothes-zyae.vercel.app/api/'
+const API = '/api'
 
 function getHeaders(includeAuth = true) {
   const headers = { 'Content-Type': 'application/json' }
