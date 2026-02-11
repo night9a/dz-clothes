@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card">
+        <h1>{% if lang == 'ar' %}التحقق من البريد{% else %}Vérification email{% endif %}</h1>
+        {% if token %}
+        <form action="{{ url_for('action_verify_email') }}" method="post">
+            <input type="hidden" name="token" value="{{ token }}">
+            <button type="submit" class="btn btn-primary">{% if lang == 'ar' %}تحقق{% else %}Vérifier{% endif %}</button>
+        </form>
+        {% else %}
+        <p class="error-msg">{% if lang == 'ar' %}رابط غير صالح{% else %}Lien invalide{% endif %}</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,6 +1,5 @@
 import uuid
 import requests
-from flask import request
 from flask_jwt_extended import create_access_token, get_jwt_identity, verify_jwt_in_request
 from flask_bcrypt import Bcrypt
 from db import get_cursor
@@ -86,7 +85,6 @@ def get_current_user_admin():
     except Exception:
         return False
 
-
 def login_or_register_google(id_token: str):
     """Verify Google token, find or create user, return (result_dict, error)."""
     payload = verify_google_token(id_token)
@@ -95,10 +93,7 @@ def login_or_register_google(id_token: str):
     email = payload['email']
     full_name = (payload.get('name') or '').strip() or email
     with get_cursor(commit=True) as cur:
-        cur.execute(
-            "SELECT id, is_admin FROM users WHERE email = %s",
-            (email,),
-        )
+        cur.execute("SELECT id, is_admin FROM users WHERE email = %s", (email,))
         row = cur.fetchone()
         if row:
             user_id, is_admin = row['id'], row['is_admin']

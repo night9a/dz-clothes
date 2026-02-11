@@ -1,8 +1,8 @@
+#!/usr/bin/env python3
 """
 Simple Telegram bot for DZ Clothes admin.
 Run: python telegram_bot.py
-When admin sends /start, the bot replies with their chat_id and saves it to admin_settings (if DB configured).
-Use that chat_id in .env as TELEGRAM_ADMIN_CHAT_ID or in Admin Panel > Telegram.
+When admin sends /start, the bot replies with their chat_id.
 """
 import os
 import requests
@@ -59,10 +59,9 @@ def main():
                     save_chat_id(chat_id)
                     send_message(
                         chat_id,
-                        "✅ DZ Clothes – Notifications activées.\n\n"
+                        f"✅ DZ Clothes – Notifications activées.\n\n"
                         f"Votre chat_id: {chat_id}\n"
-                        "Collez ce numéro dans le panneau admin (Paramètres > Telegram) ou dans .env TELEGRAM_ADMIN_CHAT_ID.\n"
-                        "Vous recevrez une notification à chaque nouvelle commande.",
+                        f"Vous recevrez une notification à chaque nouvelle commande.",
                     )
         except Exception as e:
             print("Error:", e)

@@ -1,4 +1,3 @@
-"""Send admin notifications to Telegram."""
 import os
 import requests
 
@@ -9,21 +8,20 @@ def get_admin_chat_id():
         return chat_id
     if not token:
         return None
-    return "8495316071"
+    try:
+        from db import get_cursor
+        with get_cursor(commit=False) as cur:
+            cur.execute("SELECT value FROM admin_settings WHERE key = 'telegram_chat_id'")
+            row = cur.fetchone()
+            return row['value'] if row else None
+    except Exception:
+        return None
 
-    #try:
-    #    from db import get_cursor
-    #    with get_cursor(commit=False) as cur:
-    #        cur.execute("SELECT value FROM admin_settings WHERE key = 'telegram_chat_id'")
-    #        row = cur.fetchone()
-    #        return row['value'] if row else None
-    #except Exception:
-    #    return None
 def send_telegram_notification(message: str) -> bool:
-    print("telegram")
     token = os.getenv('TELEGRAM_BOT_TOKEN')
     chat_id = get_admin_chat_id()
     if not token or not chat_id:
+        print("[Telegram] Not configured - skipping notification")
         return False
     try:
         r = requests.post(
@@ -31,8 +29,14 @@ def send_telegram_notification(message: str) -> bool:
             json={'chat_id': chat_id, 'text': message, 'parse_mode': 'HTML'},
             timeout=10,
         )
-        return r.status_code == 200
-    except Exception:
+        if r.status_code == 200:
+            print(f"[Telegram] ✅ Notification sent")
+            return True
+        else:
+            print(f"[Telegram] ❌ Error: {r.status_code}")
+            return False
+    except Exception as e:
+        print(f"[Telegram] ❌ Error: {str(e)}")
         return False
 
 def notify_new_order(order_number: str, total: float, email: str, items_summary: str):

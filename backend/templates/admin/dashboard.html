@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container" style="padding: 2rem 0;">
+    <h1>Admin Dashboard</h1>
+    <p>Gérez votre boutique ici. (Fonctionnalité complète disponible via API)</p>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 2rem;">
+        <div style="padding: 1.5rem; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border);">
+            <h3 style="color: var(--text-muted); font-size: 0.875rem;">Commandes</h3>
+            <p style="font-size: 2rem; color: var(--accent); font-weight: 700;">-</p>
+        </div>
+        <div style="padding: 1.5rem; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border);">
+            <h3 style="color: var(--text-muted); font-size: 0.875rem;">Ventes (DA)</h3>
+            <p style="font-size: 2rem; color: var(--accent); font-weight: 700;">-</p>
+        </div>
+        <div style="padding: 1.5rem; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border);">
+            <h3 style="color: var(--text-muted); font-size: 0.875rem;">Produits</h3>
+            <p style="font-size: 2rem; color: var(--accent); font-weight: 700;">-</p>
+        </div>
+    </div>
+    <div style="margin-top: 2rem;">
+        <a href="{{ url_for('admin_orders') }}" class="btn btn-primary" style="margin-right: 0.5rem;">Commandes</a>
+        <a href="{{ url_for('admin_products') }}" class="btn btn-ghost" style="margin-right: 0.5rem;">Produits</a>
+        <a href="{{ url_for('admin_discounts') }}" class="btn btn-ghost" style="margin-right: 0.5rem;">Réductions</a>
+        <a href="{{ url_for('admin_settings') }}" class="btn btn-ghost">Paramètres</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container checkout-page">
+    <h1 class="page-title">{% if lang == 'ar' %}إتمام الطلب{% else %}Finaliser la commande{% endif %}</h1>
+    
+    <div class="checkout-ccp-notice">
+        <strong>{% if lang == 'ar' %}ملاحظة: أرسل الدفع عبر Baridi Mob ثم أكمل الطلب{% else %}Note: Envoyez le paiement via Baridi Mob puis complétez la commande{% endif %}</strong>
+    </div>
+    
+    <form action="{{ url_for('action_checkout') }}" method="post" class="checkout-form">
+        <div class="checkout-grid">
+            <div class="checkout-form-section">
+                <h2>{% if lang == 'ar' %}معلومات الدفع{% else %}Informations de paiement{% endif %}</h2>
+                <div class="form-group">
+                    <label>{% if lang == 'ar' %}رقم Baridi Mob{% else %}Numéro Baridi Mob{% endif %}</label>
+                    <input type="text" name="baridi_phone" required placeholder="0550123456">
+                </div>
+                <div class="form-group">
+                    <label>{% if lang == 'ar' %}مرجع المعاملة{% else %}Référence transaction{% endif %}</label>
+                    <input type="text" name="baridi_reference" required>
+                </div>
+                <div class="form-group">
+                    <label>{% if lang == 'ar' %}البريد الإلكتروني{% else %}Email{% endif %}</label>
+                    <input type="email" name="email" value="{{ user.email if user else '' }}" required>
+                </div>
+                <div class="form-group">
+                    <label>{% if lang == 'ar' %}الاسم الكامل{% else %}Nom complet{% endif %}</label>
+                    <input type="text" name="full_name" required>
+                </div>
+                <div class="form-group">
+                    <label>{% if lang == 'ar' %}عنوان التوصيل{% else %}Adresse de livraison{% endif %}</label>
+                    <textarea name="shipping_address" rows="3" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>{% if lang == 'ar' %}رمز الخصم{% else %}Code promo{% endif %}</label>
+                    <input type="text" name="discount_code" placeholder="PROMO20">
+                </div>
+            </div>
+            
+            <div class="checkout-summary">
+                <h3>{% if lang == 'ar' %}ملخص الطلب{% else %}Résumé{% endif %}</h3>
+                <ul>
+                    {% for item in items %}
+                    <li>{{ item.name_fr if lang == 'fr' else item.name_ar }} × {{ item.quantity }} — {{ "{:,.0f}".format(item.price * item.quantity) }} DA</li>
+                    {% endfor %}
+                </ul>
+                <p class="summary-total">{% if lang == 'ar' %}المجموع{% else %}Total{% endif %}: {{ "{:,.0f}".format(subtotal) }} DA</p>
+                <button type="submit" class="btn btn-primary">{% if lang == 'ar' %}تأكيد الطلب{% else %}Confirmer{% endif %}</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

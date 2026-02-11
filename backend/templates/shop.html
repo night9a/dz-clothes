@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container shop-page">
+    <h1 class="page-title">{% if lang == 'ar' %}المتجر{% else %}Boutique{% endif %}</h1>
+    <div class="shop-layout">
+        <aside class="filters">
+            <form method="get" action="{{ url_for('shop') }}">
+                <label class="form-group">
+                    <span>{% if lang == 'ar' %}الفئة{% else %}Catégorie{% endif %}</span>
+                    <select name="category" onchange="this.form.submit()" class="filter-select">
+                        <option value="">{% if lang == 'ar' %}الكل{% else %}Toutes{% endif %}</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat }}" {% if cat == selected_category %}selected{% endif %}>{{ cat }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            </form>
+        </aside>
+        <div class="product-grid">
+            {% for product in products %}
+            <article class="product-card">
+                <a href="{{ url_for('product_detail', product_id=product.id) }}" class="product-card-image-wrap">
+                    {% if product.image_url %}
+                    <img src="{{ product.image_url }}" alt="{{ product.name_fr if lang == 'fr' else product.name_ar }}">
+                    {% else %}
+                    <div class="product-placeholder"></div>
+                    {% endif %}
+                </a>
+                <div class="product-card-body">
+                    <h3><a href="{{ url_for('product_detail', product_id=product.id) }}">{{ product.name_fr if lang == 'fr' else product.name_ar }}</a></h3>
+                    <p class="price-dz">{{ "{:,.0f}".format(product.price) }} DA</p>
+                    <form action="{{ url_for('action_add_to_cart') }}" method="post">
+                        <input type="hidden" name="product_id" value="{{ product.id }}">
+                        <button type="submit" class="btn btn-primary">{% if lang == 'ar' %}أضف للسلة{% else %}Ajouter{% endif %}</button>
+                    </form>
+                </div>
+            </article>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

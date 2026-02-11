@@ -3,8 +3,6 @@ from psycopg2.extras import RealDictCursor
 from contextlib import contextmanager
 import os
 from flask_bcrypt import Bcrypt
-from datetime import datetime
-import uuid
 
 def get_connection():
     return psycopg2.connect(
@@ -24,9 +22,6 @@ def get_cursor(commit=False):
         cur.close()
         conn.close()
 
-# -------------------------
-# Database Initialization
-# -------------------------
 def init_db():
     with get_cursor(commit=True) as cur:
         # Users table
@@ -127,20 +122,6 @@ def init_db():
             )
         """)
 
-        # Ensure columns exist even if table existed
-        for col, col_type in [('option_size','VARCHAR(50)'), ('option_color','VARCHAR(50)')]:
-            cur.execute(f"""
-                DO $$
-                BEGIN
-                    IF NOT EXISTS (
-                        SELECT 1 FROM information_schema.columns
-                        WHERE table_name='order_items' AND column_name='{col}'
-                    ) THEN
-                        ALTER TABLE order_items ADD COLUMN {col} {col_type};
-                    END IF;
-                END$$;
-            """)
-
         # Admin settings
         cur.execute("""
             CREATE TABLE IF NOT EXISTS admin_settings (
@@ -151,16 +132,6 @@ def init_db():
             )
         """)
 
-        # Drop old cart indexes if exist
-        try:
-            cur.execute("DROP INDEX IF EXISTS cart_user_product;")
-            cur.execute("DROP INDEX IF EXISTS cart_session_product;")
-        except Exception:
-            pass
-
-# -------------------------
-# Seed admin
-# -------------------------
 def seed_admin():
     bcrypt = Bcrypt()
     pw_hash = bcrypt.generate_password_hash('123').decode('utf-8')
@@ -178,54 +149,6 @@ def seed_admin():
                 (pw_hash,),
             )
 
-# -------------------------
-# Checkout function
-# -------------------------
-def checkout(user_id, shipping_address=None, email=None, full_name=None):
-    with get_cursor(commit=True) as cur:
-        # Get cart items
-        cur.execute("SELECT * FROM cart_items WHERE user_id = %s", (user_id,))
-        cart_items = cur.fetchall()
-        if not cart_items:
-            return {"error": "Cart is empty."}
-
-        # Calculate total
-        total = sum([float(item['price']) * item['quantity'] for item in cart_items])
-
-        # Create order
-        order_number = str(uuid.uuid4())
-        cur.execute(
-            """INSERT INTO orders (user_id, order_number, total, shipping_address, email, full_name)
-               VALUES (%s, %s, %s, %s, %s, %s) RETURNING id""",
-            (user_id, order_number, total, shipping_address, email, full_name)
-        )
-        order_id = cur.fetchone()['id']
-
-        # Insert order items
-        for item in cart_items:
-            cur.execute("SELECT name_fr, name_ar, price FROM products WHERE id = %s", (item['product_id'],))
-            prod = cur.fetchone()
-            cur.execute(
-                """INSERT INTO order_items
-                   (order_id, product_id, product_name_fr, product_name_ar, price, quantity, option_size, option_color)
-                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
-                (
-                    order_id,
-                    item['product_id'],
-                    prod['name_fr'],
-                    prod['name_ar'],
-                    float(prod['price']),
-                    item['quantity'],
-                    item.get('option_size'),
-                    item.get('option_color')
-                )
-            )
-
-        # Clear cart
-        cur.execute("DELETE FROM cart_items WHERE user_id = %s", (user_id,))
-
-        return {"success": True, "order_id": order_id, "order_number": order_number, "total": total}
-
 def seed_products():
     """Insert sample products with images and DZ prices if none exist."""
     with get_cursor(commit=False) as cur:
@@ -239,9 +162,6 @@ def seed_products():
         ('Robe d\'été Fleurie', 'فستان صيفي زهري', 'Robe légère à motifs floraux, parfaite pour l\'été.', 'فستان خفيف بزخارف زهرية، مثالي للصيف.', 3800, 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=600', 'Robes', 25, 'S,M,L', 'Fleurie,Bleu,Rose'),
         ('Sweat à Capuche Gris', 'سويتر رمادي بقبعة', 'Sweat confortable en coton, capuche doublée.', 'سويتر مريح من القطن، قبعة مبطنة.', 3200, 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?w=600', 'Sweats', 40, 'S,M,L,XL', 'Gris,Noir,Bordeaux'),
         ('Chaussures Baskets Blanc', 'حذاء رياضي أبيض', 'Baskets polyvalentes, semelle confortable.', 'حذاء رياضي متعدد الاستخدامات، نعل مريح.', 5500, 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600', 'Chaussures', 35, '39,40,41,42,43,44', 'Blanc,Noir,Gris'),
-        ('Sac à Main Cuir', 'حقيبة يد جلدية', 'Sac en cuir synthétique, bandoulière réglable.', 'حقيبة من الجلد الصناعي، حزام كتف قابل للتعديل.', 4200, 'https://images.unsplash.com/photo-1548036328-c9fa89d128fa?w=600', 'Accessoires', 15, 'Unique', 'Noir,Marron,Beige'),
-        ('Polo Bleu Marine', 'بولو أزرق داكن', 'Polo en piqué, coupe moderne.', 'بولو من القطن المبرد، قصة عصرية.', 2800, 'https://images.unsplash.com/photo-1586790170083-2f9ceadc732d?w=600', 'T-shirts', 45, 'S,M,L,XL', 'Bleu marine,Blanc,Rouge'),
-        ('Short Cargo Beige', 'شورت كارجو بيج', 'Short cargo multi-poches, résistant.', 'شورت كارجو متعدد الجيوب، متين.', 2900, 'https://images.unsplash.com/photo-1591195853828-11db59a44f6b?w=600', 'Shorts', 30, 'S,M,L,XL', 'Beige,Kaki,Noir'),
     ]
     with get_cursor(commit=True) as cur:
         for row in samples:

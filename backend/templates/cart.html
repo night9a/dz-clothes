@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container cart-page">
+    <h1 class="page-title">{% if lang == 'ar' %}سلتك{% else %}Votre Panier{% endif %}</h1>
+    
+    {% if items %}
+    <div class="cart-layout">
+        <div class="cart-list">
+            {% for item in items %}
+            <div class="cart-item">
+                <div class="cart-item-image">
+                    {% if item.image_url %}
+                    <img src="{{ item.image_url }}" alt="{{ item.name_fr if lang == 'fr' else item.name_ar }}">
+                    {% else %}
+                    <div class="product-placeholder"></div>
+                    {% endif %}
+                </div>
+                <div class="cart-item-details">
+                    <a href="{{ url_for('product_detail', product_id=item.product_id) }}">
+                        {{ item.name_fr if lang == 'fr' else item.name_ar }}
+                    </a>
+                    {% if item.option_size or item.option_color %}
+                    <span class="cart-item-options">{{ item.option_size }} {% if item.option_color %}/ {{ item.option_color }}{% endif %}</span>
+                    {% endif %}
+                    <p class="cart-item-price price-dz">{{ "{:,.0f}".format(item.price) }} DA</p>
+                    
+                    <form action="{{ url_for('action_update_cart', item_id=item.id) }}" method="post" class="cart-item-actions">
+                        <input type="number" name="quantity" min="1" max="{{ item.stock or 99 }}" value="{{ item.quantity }}" onchange="this.form.submit()">
+                        <button type="button" class="btn btn-ghost" onclick="this.form.quantity.value=0; this.form.submit();">
+                            {% if lang == 'ar' %}حذف{% else %}Supprimer{% endif %}
+                        </button>
+                    </form>
+                </div>
+                <p class="cart-item-total price-dz">{{ "{:,.0f}".format(item.price * item.quantity) }} DA</p>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="cart-summary">
+            <h3>{% if lang == 'ar' %}المجموع{% else %}Total{% endif %}</h3>
+            <p class="cart-total price-dz">{{ "{:,.0f}".format(total) }} DA</p>
+            {% if user %}
+            <a href="{{ url_for('checkout_page') }}" class="btn btn-primary">{% if lang == 'ar' %}إتمام الطلب{% else %}Commander{% endif %}</a>
+            {% else %}
+            <a href="{{ url_for('login_page') }}" class="btn btn-primary">{% if lang == 'ar' %}تسجيل الدخول{% else %}Se connecter{% endif %}</a>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <p class="empty-state">{% if lang == 'ar' %}سلتك فارغة{% else %}Votre panier est vide{% endif %}</p>
+    <a href="{{ url_for('shop') }}" class="btn btn-primary">{% if lang == 'ar' %}تسوق الآن{% else %}Continuer mes achats{% endif %}</a>
+    {% endif %}
+</div>
+{% endblock %}
