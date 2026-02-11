@@ -20,67 +20,27 @@ export default function Header() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Lock body scroll when menu is open
+  useEffect(() => {
+    if (menuOpen) {
+      document.body.classList.add('menu-open')
+    } else {
+      document.body.classList.remove('menu-open')
+    }
+    return () => document.body.classList.remove('menu-open')
+  }, [menuOpen])
+
+  const closeMenu = () => setMenuOpen(false)
+
   return (
     <header className={`header ${scrolled ? 'header-scrolled' : ''}`}>
       <div className="header-glow" />
       <div className="container header-inner">
-        <Link to="/" className="logo">
+        <Link to="/" className="logo" onClick={closeMenu}>
           <span className="logo-icon">◆</span>
           <span className="logo-text">{t('siteName')}</span>
         </Link>
         
-        <button
-          type="button"
-          className="header-burger"
-          aria-label="Menu"
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((o) => !o)}
-        >
-          <span className={menuOpen ? 'active' : ''} />
-          <span className={menuOpen ? 'active' : ''} />
-          <span className={menuOpen ? 'active' : ''} />
-        </button>
-
-        <nav className={`nav ${menuOpen ? 'nav-open' : ''}`}>
-          <NavLink to="/" end onClick={() => setMenuOpen(false)}>
-            {t('home')}
-          </NavLink>
-          <NavLink to="/shop" onClick={() => setMenuOpen(false)}>
-            {t('shop')}
-          </NavLink>
-          <NavLink to="/cart" className="cart-link" onClick={() => setMenuOpen(false)}>
-            {t('cart')}
-            {count > 0 && (
-              <span className="badge">
-                <span className="badge-inner">{count}</span>
-              </span>
-            )}
-          </NavLink>
-          {user?.is_admin && (
-            <NavLink to="/admin" onClick={() => setMenuOpen(false)}>
-              {t('admin')}
-            </NavLink>
-          )}
-          {user ? (
-            <button 
-              type="button" 
-              className="btn btn-ghost nav-btn" 
-              onClick={() => { logout(); setMenuOpen(false) }}
-            >
-              {t('logout')}
-            </button>
-          ) : (
-            <>
-              <NavLink to="/login" onClick={() => setMenuOpen(false)}>
-                {t('login')}
-              </NavLink>
-              <NavLink to="/register" className="nav-highlight" onClick={() => setMenuOpen(false)}>
-                {t('register')}
-              </NavLink>
-            </>
-          )}
-        </nav>
-
         <div className="lang-switch">
           <button
             type="button"
@@ -99,6 +59,58 @@ export default function Header() {
             AR
           </button>
         </div>
+
+        <button
+          type="button"
+          className="header-burger"
+          aria-label={menuOpen ? 'Close menu' : 'Open menu'}
+          aria-expanded={menuOpen}
+          onClick={() => setMenuOpen((o) => !o)}
+        >
+          <span className={menuOpen ? 'active' : ''} />
+          <span className={menuOpen ? 'active' : ''} />
+          <span className={menuOpen ? 'active' : ''} />
+        </button>
+
+        <nav className={`nav ${menuOpen ? 'nav-open' : ''}`}>
+          <NavLink to="/" end onClick={closeMenu}>
+            {t('home')}
+          </NavLink>
+          <NavLink to="/shop" onClick={closeMenu}>
+            {t('shop')}
+          </NavLink>
+          <NavLink to="/cart" className="cart-link" onClick={closeMenu}>
+            {t('cart')}
+            {count > 0 && (
+              <span className="badge">
+                <span className="badge-inner">{count}</span>
+              </span>
+            )}
+          </NavLink>
+          {user?.is_admin && (
+            <NavLink to="/admin" onClick={closeMenu}>
+              {t('admin')}
+            </NavLink>
+          )}
+          {user ? (
+            <button 
+              type="button" 
+              className="btn btn-ghost nav-btn" 
+              onClick={() => { logout(); closeMenu() }}
+            >
+              {t('logout')}
+            </button>
+          ) : (
+            <>
+              <NavLink to="/login" onClick={closeMenu}>
+                {t('login')}
+              </NavLink>
+              <NavLink to="/register" className="nav-highlight" onClick={closeMenu}>
+                {t('register')}
+              </NavLink>
+            </>
+          )}
+        </nav>
       </div>
     </header>
   )
