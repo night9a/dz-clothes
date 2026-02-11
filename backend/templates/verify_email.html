@@ -1,15 +1,39 @@
 {% extends "base.html" %}
+
+{% block title %}{% if lang == 'ar' %}التحقق من البريد الإلكتروني{% else %}Vérification email{% endif %} - DZ Clothes{% endblock %}
+
 {% block content %}
 <div class="auth-page">
     <div class="auth-card">
-        <h1>{% if lang == 'ar' %}التحقق من البريد{% else %}Vérification email{% endif %}</h1>
+        <h1>{% if lang == 'ar' %}التحقق من البريد الإلكتروني{% else %}Vérification de l'email{% endif %}</h1>
+        
         {% if token %}
+        <p style="text-align: center; margin-bottom: var(--space-lg); color: var(--color-text-light);">
+            {% if lang == 'ar' %}
+            اضغط على الزر أدناه لتأكيد عنوان بريدك الإلكتروني
+            {% else %}
+            Cliquez sur le bouton ci-dessous pour confirmer votre adresse email
+            {% endif %}
+        </p>
+        
         <form action="{{ url_for('action_verify_email') }}" method="post">
             <input type="hidden" name="token" value="{{ token }}">
-            <button type="submit" class="btn btn-primary">{% if lang == 'ar' %}تحقق{% else %}Vérifier{% endif %}</button>
+            <button type="submit" class="btn btn-primary">
+                {% if lang == 'ar' %}تأكيد البريد الإلكتروني{% else %}Vérifier mon email{% endif %}
+            </button>
         </form>
         {% else %}
-        <p class="error-msg">{% if lang == 'ar' %}رابط غير صالح{% else %}Lien invalide{% endif %}</p>
+        <div class="error-msg">
+            {% if lang == 'ar' %}
+            رابط التحقق غير صالح أو منتهي الصلاحية
+            {% else %}
+            Lien de vérification invalide ou expiré
+            {% endif %}
+        </div>
+        
+        <a href="{{ url_for('home') }}" class="btn btn-ghost" style="margin-top: var(--space-lg);">
+            {% if lang == 'ar' %}العودة للرئيسية{% else %}Retour à l'accueil{% endif %}
+        </a>
         {% endif %}
     </div>
 </div>

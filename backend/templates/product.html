@@ -1,7 +1,11 @@
 {% extends "base.html" %}
+
+{% block title %}{{ product.name_fr if lang == 'fr' else product.name_ar }} - DZ Clothes{% endblock %}
+
 {% block content %}
 <div class="container product-page">
     <div class="product-detail">
+        <!-- Product Image -->
         <div class="product-detail-image">
             {% if product.image_url %}
             <img src="{{ product.image_url }}" alt="{{ product.name_fr if lang == 'fr' else product.name_ar }}">
@@ -9,20 +13,29 @@
             <div class="product-placeholder"></div>
             {% endif %}
         </div>
+        
+        <!-- Product Info -->
         <div class="product-detail-info">
             <h1>{{ product.name_fr if lang == 'fr' else product.name_ar }}</h1>
+            
             <p class="product-detail-price price-dz">{{ "{:,.0f}".format(product.price) }} DA</p>
+            
             {% if product.description_fr or product.description_ar %}
-            <p class="product-detail-desc">{{ product.description_fr if lang == 'fr' else product.description_ar }}</p>
+            <p class="product-detail-desc">
+                {{ product.description_fr if lang == 'fr' else product.description_ar }}
+            </p>
             {% endif %}
             
+            <!-- Add to Cart Form -->
             <form action="{{ url_for('action_add_to_cart') }}" method="post">
                 <input type="hidden" name="product_id" value="{{ product.id }}">
                 
+                <!-- Size Selection -->
                 {% if sizes %}
                 <div class="form-group">
                     <label>{% if lang == 'ar' %}المقاس{% else %}Taille{% endif %}</label>
                     <select name="option_size" required>
+                        <option value="">{% if lang == 'ar' %}اختر المقاس{% else %}Choisir une taille{% endif %}</option>
                         {% for size in sizes %}
                         <option value="{{ size }}">{{ size }}</option>
                         {% endfor %}
@@ -30,10 +43,12 @@
                 </div>
                 {% endif %}
                 
+                <!-- Color Selection -->
                 {% if colors %}
                 <div class="form-group">
                     <label>{% if lang == 'ar' %}اللون{% else %}Couleur{% endif %}</label>
                     <select name="option_color" required>
+                        <option value="">{% if lang == 'ar' %}اختر اللون{% else %}Choisir une couleur{% endif %}</option>
                         {% for color in colors %}
                         <option value="{{ color }}">{{ color }}</option>
                         {% endfor %}
@@ -41,17 +56,50 @@
                 </div>
                 {% endif %}
                 
+                <!-- Quantity -->
                 <div class="form-group">
                     <label>{% if lang == 'ar' %}الكمية{% else %}Quantité{% endif %}</label>
-                    <input type="number" name="quantity" min="1" max="{{ product.stock or 99 }}" value="1">
+                    <input 
+                        type="number" 
+                        name="quantity" 
+                        min="1" 
+                        max="{{ product.stock or 99 }}" 
+                        value="1"
+                        {% if product.stock == 0 %}disabled{% endif %}
+                    >
                 </div>
                 
-                <button type="submit" class="btn btn-primary" {% if product.stock == 0 %}disabled{% endif %}>
-                    {% if lang == 'ar' %}أضف للسلة{% else %}Ajouter au panier{% endif %}
+                <!-- Stock Status -->
+                {% if product.stock is defined %}
+                    {% if product.stock == 0 %}
+                    <p style="color: var(--color-error); font-weight: 600; margin-bottom: var(--space-md);">
+                        {% if lang == 'ar' %}غير متوفر في المخزون{% else %}Rupture de stock{% endif %}
+                    </p>
+                    {% elif product.stock < 5 %}
+                    <p style="color: var(--color-accent); font-weight: 600; margin-bottom: var(--space-md);">
+                        {% if lang == 'ar' %}بقي {{ product.stock }} فقط في المخزون{% else %}Plus que {{ product.stock }} en stock{% endif %}
+                    </p>
+                    {% endif %}
+                {% endif %}
+                
+                <!-- Add to Cart Button -->
+                <button 
+                    type="submit" 
+                    class="btn btn-primary" 
+                    {% if product.stock == 0 %}disabled{% endif %}
+                >
+                    {% if product.stock == 0 %}
+                        {% if lang == 'ar' %}غير متوفر{% else %}Indisponible{% endif %}
+                    {% else %}
+                        {% if lang == 'ar' %}أضف للسلة{% else %}Ajouter au panier{% endif %}
+                    {% endif %}
                 </button>
             </form>
             
-            <a href="{{ url_for('shop') }}" class="btn btn-ghost">{% if lang == 'ar' %}العودة{% else %}Retour{% endif %}</a>
+            <!-- Back to Shop -->
+            <a href="{{ url_for('shop') }}" class="btn btn-ghost">
+                {% if lang == 'ar' %}العودة للمتجر{% else %}Retour à la boutique{% endif %}
+            </a>
         </div>
     </div>
 </div>

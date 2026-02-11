@@ -1,53 +1,183 @@
 {% extends "base.html" %}
+
+{% block title %}{% if lang == 'ar' %}إتمام الطلب{% else %}Finaliser la commande{% endif %} - DZ Clothes{% endblock %}
+
 {% block content %}
 <div class="container checkout-page">
     <h1 class="page-title">{% if lang == 'ar' %}إتمام الطلب{% else %}Finaliser la commande{% endif %}</h1>
     
+    <!-- Baridi Mob Payment Notice -->
     <div class="checkout-ccp-notice">
-        <strong>{% if lang == 'ar' %}ملاحظة: أرسل الدفع عبر Baridi Mob ثم أكمل الطلب{% else %}Note: Envoyez le paiement via Baridi Mob puis complétez la commande{% endif %}</strong>
+        <strong>
+            {% if lang == 'ar' %}
+            ⚠️ ملاحظة مهمة: يرجى إرسال الدفع عبر Baridi Mob أولاً، ثم أدخل معلومات الدفع وأكمل الطلب
+            {% else %}
+            ⚠️ Note importante : Veuillez d'abord envoyer le paiement via Baridi Mob, puis saisissez les informations de paiement et validez la commande
+            {% endif %}
+        </strong>
     </div>
     
     <form action="{{ url_for('action_checkout') }}" method="post" class="checkout-form">
         <div class="checkout-grid">
+            <!-- Payment & Shipping Information -->
             <div class="checkout-form-section">
-                <h2>{% if lang == 'ar' %}معلومات الدفع{% else %}Informations de paiement{% endif %}</h2>
+                <h2>{% if lang == 'ar' %}معلومات الدفع والتوصيل{% else %}Informations de paiement et livraison{% endif %}</h2>
+                
+                <!-- Baridi Mob Phone -->
                 <div class="form-group">
-                    <label>{% if lang == 'ar' %}رقم Baridi Mob{% else %}Numéro Baridi Mob{% endif %}</label>
-                    <input type="text" name="baridi_phone" required placeholder="0550123456">
+                    <label for="baridi_phone">
+                        {% if lang == 'ar' %}رقم هاتف Baridi Mob *{% else %}Numéro de téléphone Baridi Mob *{% endif %}
+                    </label>
+                    <input 
+                        type="tel" 
+                        id="baridi_phone"
+                        name="baridi_phone" 
+                        required 
+                        placeholder="0550123456"
+                        pattern="[0-9]{10}"
+                    >
+                    <small style="color: var(--color-text-light); font-size: 0.875rem;">
+                        {% if lang == 'ar' %}أدخل رقم الهاتف المستخدم للدفع{% else %}Entrez le numéro utilisé pour le paiement{% endif %}
+                    </small>
                 </div>
+                
+                <!-- Transaction Reference -->
                 <div class="form-group">
-                    <label>{% if lang == 'ar' %}مرجع المعاملة{% else %}Référence transaction{% endif %}</label>
-                    <input type="text" name="baridi_reference" required>
+                    <label for="baridi_reference">
+                        {% if lang == 'ar' %}رقم المرجع / المعاملة *{% else %}Référence / N° de transaction *{% endif %}
+                    </label>
+                    <input 
+                        type="text" 
+                        id="baridi_reference"
+                        name="baridi_reference" 
+                        required
+                        placeholder="{% if lang == 'ar' %}أدخل رقم المرجع{% else %}Entrez la référence{% endif %}"
+                    >
+                    <small style="color: var(--color-text-light); font-size: 0.875rem;">
+                        {% if lang == 'ar' %}رقم المرجع من عملية الدفع{% else %}Numéro de référence de la transaction{% endif %}
+                    </small>
                 </div>
+                
+                <!-- Email -->
                 <div class="form-group">
-                    <label>{% if lang == 'ar' %}البريد الإلكتروني{% else %}Email{% endif %}</label>
-                    <input type="email" name="email" value="{{ user.email if user else '' }}" required>
+                    <label for="email">
+                        {% if lang == 'ar' %}البريد الإلكتروني *{% else %}Email *{% endif %}
+                    </label>
+                    <input 
+                        type="email" 
+                        id="email"
+                        name="email" 
+                        value="{{ user.email if user else '' }}" 
+                        required
+                        placeholder="exemple@email.com"
+                    >
                 </div>
+                
+                <!-- Full Name -->
                 <div class="form-group">
-                    <label>{% if lang == 'ar' %}الاسم الكامل{% else %}Nom complet{% endif %}</label>
-                    <input type="text" name="full_name" required>
+                    <label for="full_name">
+                        {% if lang == 'ar' %}الاسم الكامل *{% else %}Nom complet *{% endif %}
+                    </label>
+                    <input 
+                        type="text" 
+                        id="full_name"
+                        name="full_name" 
+                        required
+                        placeholder="{% if lang == 'ar' %}أحمد بن علي{% else %}Jean Dupont{% endif %}"
+                    >
                 </div>
+                
+                <!-- Shipping Address -->
                 <div class="form-group">
-                    <label>{% if lang == 'ar' %}عنوان التوصيل{% else %}Adresse de livraison{% endif %}</label>
-                    <textarea name="shipping_address" rows="3" required></textarea>
+                    <label for="shipping_address">
+                        {% if lang == 'ar' %}عنوان التوصيل الكامل *{% else %}Adresse de livraison complète *{% endif %}
+                    </label>
+                    <textarea 
+                        id="shipping_address"
+                        name="shipping_address" 
+                        rows="3" 
+                        required
+                        placeholder="{% if lang == 'ar' %}الشارع، المدينة، الولاية، الرمز البريدي{% else %}Rue, ville, wilaya, code postal{% endif %}"
+                    ></textarea>
+                    <small style="color: var(--color-text-light); font-size: 0.875rem;">
+                        {% if lang == 'ar' %}يرجى إدخال العنوان الكامل لضمان التوصيل{% else %}Veuillez saisir l'adresse complète pour assurer la livraison{% endif %}
+                    </small>
                 </div>
+                
+                <!-- Discount Code (Optional) -->
                 <div class="form-group">
-                    <label>{% if lang == 'ar' %}رمز الخصم{% else %}Code promo{% endif %}</label>
-                    <input type="text" name="discount_code" placeholder="PROMO20">
+                    <label for="discount_code">
+                        {% if lang == 'ar' %}رمز الخصم (اختياري){% else %}Code promo (optionnel){% endif %}
+                    </label>
+                    <input 
+                        type="text" 
+                        id="discount_code"
+                        name="discount_code" 
+                        placeholder="{% if lang == 'ar' %}أدخل رمز الخصم{% else %}Entrez le code promo{% endif %}"
+                    >
                 </div>
             </div>
             
+            <!-- Order Summary -->
             <div class="checkout-summary">
-                <h3>{% if lang == 'ar' %}ملخص الطلب{% else %}Résumé{% endif %}</h3>
+                <h3>{% if lang == 'ar' %}ملخص الطلب{% else %}Résumé de la commande{% endif %}</h3>
+                
                 <ul>
                     {% for item in items %}
-                    <li>{{ item.name_fr if lang == 'fr' else item.name_ar }} × {{ item.quantity }} — {{ "{:,.0f}".format(item.price * item.quantity) }} DA</li>
+                    <li>
+                        <strong>{{ item.name_fr if lang == 'fr' else item.name_ar }}</strong>
+                        <br>
+                        <small style="color: var(--color-text-light);">
+                            {% if item.option_size or item.option_color %}
+                            {{ item.option_size }}{% if item.option_size and item.option_color %} / {% endif %}{{ item.option_color }}
+                            <br>
+                            {% endif %}
+                            {% if lang == 'ar' %}الكمية:{% else %}Quantité :{% endif %} {{ item.quantity }}
+                        </small>
+                        <br>
+                        {{ "{:,.0f}".format(item.price * item.quantity) }} DA
+                    </li>
                     {% endfor %}
                 </ul>
-                <p class="summary-total">{% if lang == 'ar' %}المجموع{% else %}Total{% endif %}: {{ "{:,.0f}".format(subtotal) }} DA</p>
-                <button type="submit" class="btn btn-primary">{% if lang == 'ar' %}تأكيد الطلب{% else %}Confirmer{% endif %}</button>
+                
+                <p class="summary-total">
+                    {% if lang == 'ar' %}المجموع الكلي{% else %}Total{% endif %}: 
+                    <strong>{{ "{:,.0f}".format(subtotal) }} DA</strong>
+                </p>
+                
+                <button type="submit" class="btn btn-primary">
+                    {% if lang == 'ar' %}تأكيد وإرسال الطلب{% else %}Confirmer la commande{% endif %}
+                </button>
+                
+                <a href="{{ url_for('cart_page') }}" class="btn btn-ghost" style="margin-top: var(--space-md);">
+                    {% if lang == 'ar' %}العودة للسلة{% else %}Retour au panier{% endif %}
+                </a>
             </div>
         </div>
     </form>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form validation feedback
+    document.querySelector('.checkout-form').addEventListener('submit', function(e) {
+        const requiredFields = this.querySelectorAll('[required]');
+        let allValid = true;
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                allValid = false;
+                field.style.borderColor = 'var(--color-error)';
+            } else {
+                field.style.borderColor = 'var(--color-border)';
+            }
+        });
+        
+        if (!allValid) {
+            e.preventDefault();
+            alert('{% if lang == "ar" %}يرجى ملء جميع الحقول المطلوبة{% else %}Veuillez remplir tous les champs requis{% endif %}');
+        }
+    });
+</script>
 {% endblock %}

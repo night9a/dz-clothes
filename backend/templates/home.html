@@ -1,40 +1,61 @@
 {% extends "base.html" %}
+
+{% block title %}DZ Clothes - {% if lang == 'ar' %}أزياء وستايل فاخر{% else %}Mode & Style Premium{% endif %}{% endblock %}
+
 {% block content %}
+<!-- Hero Section -->
 <div class="hero">
     <div class="container">
         <h1 class="hero-title">DZ Clothes</h1>
         <p class="hero-subtitle">{% if lang == 'ar' %}أزياء وستايل فاخر{% else %}Mode & Style Premium{% endif %}</p>
-        <a href="{{ url_for('shop') }}" class="btn btn-primary hero-cta">{% if lang == 'ar' %}تسوق الآن{% else %}Boutique{% endif %}</a>
+        <a href="{{ url_for('shop') }}" class="btn btn-primary hero-cta">
+            {% if lang == 'ar' %}تسوق الآن{% else %}Découvrir la boutique{% endif %}
+        </a>
     </div>
 </div>
 
+<!-- Products Section -->
 <section class="section">
     <div class="container">
-        <h2 class="section-title">{% if lang == 'ar' %}منتجاتنا{% else %}Nos Produits{% endif %}</h2>
+        <h2 class="section-title">{% if lang == 'ar' %}منتجاتنا المميزة{% else %}Nos Produits{% endif %}</h2>
+        
+        {% if products %}
         <div class="product-grid">
             {% for product in products %}
             <article class="product-card">
                 <a href="{{ url_for('product_detail', product_id=product.id) }}" class="product-card-image-wrap">
                     {% if product.image_url %}
-                    <img src="{{ product.image_url }}" alt="{{ product.name_fr if lang == 'fr' else product.name_ar }}">
+                    <img src="{{ product.image_url }}" alt="{{ product.name_fr if lang == 'fr' else product.name_ar }}" loading="lazy">
                     {% else %}
                     <div class="product-placeholder"></div>
                     {% endif %}
                 </a>
                 <div class="product-card-body">
-                    <h3><a href="{{ url_for('product_detail', product_id=product.id) }}">{{ product.name_fr if lang == 'fr' else product.name_ar }}</a></h3>
+                    <h3>
+                        <a href="{{ url_for('product_detail', product_id=product.id) }}">
+                            {{ product.name_fr if lang == 'fr' else product.name_ar }}
+                        </a>
+                    </h3>
                     <p class="price-dz">{{ "{:,.0f}".format(product.price) }} DA</p>
                     <form action="{{ url_for('action_add_to_cart') }}" method="post">
                         <input type="hidden" name="product_id" value="{{ product.id }}">
-                        <button type="submit" class="btn btn-primary">{% if lang == 'ar' %}أضف للسلة{% else %}Ajouter{% endif %}</button>
+                        <button type="submit" class="btn btn-primary">
+                            {% if lang == 'ar' %}أضف للسلة{% else %}Ajouter au panier{% endif %}
+                        </button>
                     </form>
                 </div>
             </article>
             {% endfor %}
         </div>
+        
         <div class="section-cta">
-            <a href="{{ url_for('shop') }}" class="btn btn-ghost">{% if lang == 'ar' %}عرض الكل{% else %}Voir tout{% endif %}</a>
+            <a href="{{ url_for('shop') }}" class="btn btn-ghost">
+                {% if lang == 'ar' %}عرض جميع المنتجات{% else %}Voir tous les produits{% endif %}
+            </a>
         </div>
+        {% else %}
+        <p class="empty-state">{% if lang == 'ar' %}لا توجد منتجات متاحة حالياً{% else %}Aucun produit disponible pour le moment{% endif %}</p>
+        {% endif %}
     </div>
 </section>
 {% endblock %}

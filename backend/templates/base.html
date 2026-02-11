@@ -3,31 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}DZ Clothes{% endblock %}</title>
+    <title>{% block title %}DZ Clothes - Mode & Style Premium{% endblock %}</title>
+    
+    <!-- Preconnect to external resources -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Main Stylesheet -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
     {% block extra_css %}{% endblock %}
 </head>
 <body class="{% if lang == 'ar' %}rtl{% endif %}">
+    <!-- Header -->
     <header class="header">
         <div class="header-glow"></div>
         <div class="container header-inner">
+            <!-- Logo -->
             <a href="{{ url_for('home') }}" class="logo">
                 <span class="logo-icon">◆</span>
                 <span class="logo-text">DZ Clothes</span>
             </a>
             
+            <!-- Language Switch -->
             <div class="lang-switch">
                 <a href="{{ url_for('action_set_lang', lang='fr') }}" class="{% if lang == 'fr' %}active{% endif %}">FR</a>
                 <a href="{{ url_for('action_set_lang', lang='ar') }}" class="{% if lang == 'ar' %}active{% endif %}">AR</a>
             </div>
 
-            <button type="button" class="header-burger" onclick="toggleMenu()">
-                <span></span><span></span><span></span>
+            <!-- Mobile Menu Toggle -->
+            <button type="button" class="header-burger" onclick="toggleMenu()" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
             </button>
 
+            <!-- Navigation -->
             <nav class="nav" id="mainNav">
                 <a href="{{ url_for('home') }}">{% if lang == 'ar' %}الرئيسية{% else %}Accueil{% endif %}</a>
                 <a href="{{ url_for('shop') }}">{% if lang == 'ar' %}المتجر{% else %}Boutique{% endif %}</a>
@@ -45,6 +59,7 @@
         </div>
     </header>
 
+    <!-- Flash Messages -->
     {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
     <div class="flash-container">
@@ -55,31 +70,69 @@
     {% endif %}
     {% endwith %}
 
-    <main style="min-height: calc(100vh - 200px);">
+    <!-- Main Content -->
+    <main>
         {% block content %}{% endblock %}
     </main>
 
+    <!-- Footer -->
     <footer class="footer">
         <div class="container footer-inner">
             <div class="footer-links">
                 <a href="{{ url_for('home') }}">{% if lang == 'ar' %}الرئيسية{% else %}Accueil{% endif %}</a>
                 <a href="{{ url_for('shop') }}">{% if lang == 'ar' %}المتجر{% else %}Boutique{% endif %}</a>
             </div>
-            <p class="footer-credit">{% if lang == 'ar' %}صممه{% else %}Créé par{% endif %} <a href="https://www.instagram.com/mosho_tenx/" target="_blank" class="credit-link">mosho</a></p>
+            <p class="footer-credit">
+                {% if lang == 'ar' %}صممه{% else %}Créé par{% endif %} 
+                <a href="https://www.instagram.com/mosho_tenx/" target="_blank" rel="noopener" class="credit-link">mosho</a>
+            </p>
         </div>
     </footer>
 
+    <!-- Scripts -->
     <script>
+        // Mobile Menu Toggle
         function toggleMenu() {
-            document.getElementById('mainNav').classList.toggle('nav-open');
-            document.querySelectorAll('.header-burger span').forEach(s => s.classList.toggle('active'));
+            const nav = document.getElementById('mainNav');
+            const burgerSpans = document.querySelectorAll('.header-burger span');
+            
+            nav.classList.toggle('nav-open');
+            burgerSpans.forEach(span => span.classList.toggle('active'));
         }
+
+        // Close mobile menu when clicking outside
+        document.addEventListener('click', function(event) {
+            const nav = document.getElementById('mainNav');
+            const burger = document.querySelector('.header-burger');
+            
+            if (nav.classList.contains('nav-open') && 
+                !nav.contains(event.target) && 
+                !burger.contains(event.target)) {
+                toggleMenu();
+            }
+        });
+
+        // Close mobile menu when clicking on a link
+        document.querySelectorAll('.nav a').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth < 1024) {
+                    toggleMenu();
+                }
+            });
+        });
+
+        // Auto-hide flash messages
         setTimeout(() => {
             document.querySelectorAll('.flash-container').forEach(el => {
                 el.style.opacity = '0';
                 setTimeout(() => el.remove(), 500);
             });
         }, 5000);
+
+        // Prevent flash on page load for mobile menu
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('mainNav').style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+        });
     </script>
     {% block extra_js %}{% endblock %}
 </body>

@@ -1,26 +1,76 @@
 {% extends "base.html" %}
+
+{% block title %}{% if lang == 'ar' %}إنشاء حساب{% else %}Créer un compte{% endif %} - DZ Clothes{% endblock %}
+
 {% block content %}
 <div class="auth-page">
     <div class="auth-card">
-        <h1>{% if lang == 'ar' %}إنشاء حساب{% else %}Créer un compte{% endif %}</h1>
+        <h1>{% if lang == 'ar' %}إنشاء حساب جديد{% else %}Créer un compte{% endif %}</h1>
+        
         <form action="{{ url_for('action_register') }}" method="post">
+            <!-- Email Field -->
             <div class="form-group">
-                <label>{% if lang == 'ar' %}البريد الإلكتروني{% else %}Email{% endif %}</label>
-                <input type="email" name="email" required>
+                <label for="email">
+                    {% if lang == 'ar' %}البريد الإلكتروني{% else %}Adresse email{% endif %}
+                </label>
+                <input 
+                    type="email" 
+                    id="email"
+                    name="email" 
+                    required
+                    placeholder="exemple@email.com"
+                    autocomplete="email"
+                >
             </div>
+            
+            <!-- Full Name Field -->
             <div class="form-group">
-                <label>{% if lang == 'ar' %}الاسم الكامل{% else %}Nom complet{% endif %}</label>
-                <input type="text" name="full_name">
+                <label for="full_name">
+                    {% if lang == 'ar' %}الاسم الكامل (اختياري){% else %}Nom complet (optionnel){% endif %}
+                </label>
+                <input 
+                    type="text" 
+                    id="full_name"
+                    name="full_name"
+                    placeholder="{% if lang == 'ar' %}أحمد بن علي{% else %}Jean Dupont{% endif %}"
+                    autocomplete="name"
+                >
             </div>
+            
+            <!-- Password Field -->
             <div class="form-group">
-                <label>{% if lang == 'ar' %}كلمة المرور{% else %}Mot de passe{% endif %}</label>
-                <input type="password" name="password" required minlength="6">
+                <label for="password">
+                    {% if lang == 'ar' %}كلمة المرور{% else %}Mot de passe{% endif %}
+                </label>
+                <input 
+                    type="password" 
+                    id="password"
+                    name="password" 
+                    required 
+                    minlength="6"
+                    placeholder="{% if lang == 'ar' %}6 أحرف على الأقل{% else %}Minimum 6 caractères{% endif %}"
+                    autocomplete="new-password"
+                >
+                <small style="color: var(--color-text-light); font-size: 0.875rem;">
+                    {% if lang == 'ar' %}يجب أن تكون كلمة المرور 6 أحرف على الأقل{% else %}Le mot de passe doit contenir au moins 6 caractères{% endif %}
+                </small>
             </div>
-            <button type="submit" class="btn btn-primary">{% if lang == 'ar' %}تسجيل{% else %}S'inscrire{% endif %}</button>
+            
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary">
+                {% if lang == 'ar' %}إنشاء الحساب{% else %}Créer mon compte{% endif %}
+            </button>
         </form>
+        
+        <!-- Login Link -->
         <p class="auth-switch">
-            {% if lang == 'ar' %}لديك حساب؟{% else %}Déjà un compte ?{% endif %}
-            <a href="{{ url_for('login_page') }}">{% if lang == 'ar' %}دخول{% else %}Se connecter{% endif %}</a>
+            {% if lang == 'ar' %}
+            لديك حساب بالفعل؟ 
+            <a href="{{ url_for('login_page') }}">سجل الدخول</a>
+            {% else %}
+            Vous avez déjà un compte ? 
+            <a href="{{ url_for('login_page') }}">Se connecter</a>
+            {% endif %}
         </p>
     </div>
 </div>
