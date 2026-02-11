@@ -17,6 +17,6 @@ class Config:
     # Telegram
     TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
     
-    FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost:5000')
+    FRONTEND_URL = os.getenv('FRONTEND_URL', 'https://dz-clothes00.vercel.app/')
     VERIFY_EMAIL_URL_PATH = '/verify-email'
     GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID', '814124596804-o07r8uokfces627sar5l0gk1ihacp1u5.apps.googleusercontent.com')
