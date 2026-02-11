@@ -9,7 +9,7 @@ export default defineConfig({
     allowedHosts: 'all', // allow ngrok domain
     proxy: {
       '/api': {
-        target: 'https://dz-clothes-zyae.vercel.app',
+        target: 'https://dz-clothes00.vercel.app/',
         changeOrigin: true,
       }
     }
